@@ -26,8 +26,7 @@ namespace msstdlib {
 		bool isSigned = false;
 		int position = 0;
 
-		// Handle zero else
-		// as we process != 0
+		// Handle zero as we process != 0
 		// in our while loop.
 		if (input == 0)
 		{
@@ -51,6 +50,7 @@ namespace msstdlib {
 		{
 			// In a base of 10
 			// being in decimal number system.
+			// Grab last / remaining number from end.
 			int remainder = input % msstdlib::defaults::BASE;
 
 			// Adding to '0' (48) to convert to ASCII
@@ -58,7 +58,8 @@ namespace msstdlib {
 			buffer[position++] = remainder + '0';
 
 			// Dividing by base
-			// to remaining number.
+			// to remaining number to remove
+			// last / remainder.
 			input = input / msstdlib::defaults::BASE;
 		}
 
@@ -74,7 +75,7 @@ namespace msstdlib {
 
 		// Reverse as we were processing right to left
 		// re-use the string length from already incremented
-		// index value.
+		// position value.
 		for (size_t index = 0; index < position / 2; index++)
 		{
 			std::swap(buffer[index], buffer[position - index - 1]);
