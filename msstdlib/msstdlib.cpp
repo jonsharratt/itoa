@@ -1,86 +1,81 @@
 #include "msstdlib.h"
-#include <algorithm>
+#include <cmath>
+#include <cstring>
+
+// Storage size of buffer for a valid integer string
+// + 2 to include signed integers and null termination.
+#define ITOA_BUFFER_SIZE (sizeof(int) * CHAR_BIT + 2)
 
 namespace msstdlib {
-	namespace defaults
-	{
-		// unsigned const as always positive when
-		// dealing with base number systems.
-		//
-		// 10 Decimal
-		// 16 Hexadecimal
-		// 8 Octal
-		// 2 Binary
-		const unsigned int BASE = 10;
-	}
-
-	/**
-	 * Converts a base 10 integer value to a null-terminated string.
+	/*
+	 * Converts default base 10 integer value to a null-terminated string.
 	 *
-	 * @input value to be converted to a string
-	 * @buffer array in memory where to store the resulting null-terminated string.
+	 * @input value to be converted to a string.
+	 * @result buffer to store the resulting conversion.
+	 * @size of buffer to store string.
+	 * @base number system to use when converting.
 	 * @return a pointer to the resulting null-terminated string (same as @buffer).
 	*/
-	char* itoa(int input, char* buffer)
+	char* itoa(
+		int input,
+		char* result,
+		const unsigned int& size,
+		const unsigned int& base
+	)
 	{
-		bool isSigned = false;
-		int position = 0;
-
-		// Handle zero as we process != 0
-		// in our while loop.
-		if (input == 0)
-		{
-			buffer[position++] = '0';
+		// Validation for valid number system.
+		// (base > 36 || size == 0)
+		// 
+		// TODO: Support additional number systems.
+		//
+		if (base != 10 || size == 0) {
+			return nullptr;
 		}
 
-		if (input < 0)
-		{
-			// Dealing with a signed
-			// negative number.
-			isSigned = true;
+		// Internal buffer to do work
+		// and guard against size of provided buffer.
+		char buffer[ITOA_BUFFER_SIZE];
 
-			// Ensure we convert to positive
-			// for next operation.
+		// Get pointer to buffer.
+		char* pBuffer = &buffer[sizeof(buffer) - 1];
+
+		bool signedNum = false;
+
+		if (input < 0) {
+			signedNum = true;
 			input = -input;
 		}
 
-		// Move through right to left
-		// of the integer provided.
-		while (input != 0)
-		{
-			// In a base of 10
-			// being in decimal number system.
-			// Grab last / remaining number from end.
-			int remainder = input % msstdlib::defaults::BASE;
+		// Always end with null terminated string.
+		*pBuffer = '\0';
 
-			// Adding to '0' (48) to convert to ASCII
-			// character representation as numbers start from 48.
-			buffer[position++] = remainder + '0';
+ 		do {
+			// Dereference and set converted
+			// ascii character for integer.
+ 			*(--pBuffer) = input % base + '0';
 
-			// Dividing by base
-			// to remaining number to remove
-			// last / remainder.
-			input = input / msstdlib::defaults::BASE;
+			// Remove last number.
+			input = input / base;
+ 		} while (input);
+
+		// Add sign if needed.
+		if (signedNum) {
+			*(--pBuffer) = '-';
 		}
 
-		// If we are signed
-		// ensure we have "-" char (45). 
-		if (isSigned)
-		{
-			buffer[position++] = '-';
-		}
+		// Get length of resulting used buffer.
+		size_t length = &buffer[sizeof(buffer)] - pBuffer;
 
-		// null terminate the string built.
-		buffer[position] = '\0';
+		// Validate we have enough room
+		// to store result.
+ 		if (length > size) {
+ 			return nullptr;
+ 		}
 
-		// Reverse as we were processing right to left
-		// re-use the string length from already incremented
-		// position value.
-		for (size_t index = 0; index < position / 2; index++)
-		{
-			std::swap(buffer[index], buffer[position - index - 1]);
-		}
+		// Copy relevant data into resulting
+		// buffer based on size used.
+		std::memcpy(result, pBuffer, size);
 
-		return buffer;
+		return result;
 	}
 }
