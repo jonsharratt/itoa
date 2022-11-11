@@ -1,51 +1,90 @@
 #include "pch.h"
 #include "../msstdlib/msstdlib.h"
+#include <stdio.h>
+#include <stdlib.h>
 
-TEST(MSStandardLib_itoa, Zero) {
-	char result[2];
-	char* expected = msstdlib::itoa(0, result, 2);
-	
-	EXPECT_EQ(std::string(expected), "0");
+TEST(MSStandardLib_itoa, DecimalZero) {
+	char buffer[2];
+	msstdlib::ItoaResult result = msstdlib::itoa(0, buffer, sizeof(buffer));
+
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "0");
 }
 
-TEST(MSStandardLib_itoa, SignedZero) {
-	char result[2];
-	char* expected = msstdlib::itoa(-0, result, sizeof(result));
+TEST(MSStandardLib_itoa, DecimalSignedZero) {
+	char buffer[2];
+	msstdlib::ItoaResult result = msstdlib::itoa(-0, buffer, sizeof(buffer));
 
-	EXPECT_EQ(std::string(expected), "0");
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "0");
+}
+TEST(MSStandardLib_itoa, DecimalUnsigned) {
+	char buffer[4];
+	int result = msstdlib::itoa(123, buffer, sizeof(buffer));
+
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "123");
 }
 
-TEST(MSStandardLib_itoa, Unsigned) {
-	char result[4];
-	char* expected = msstdlib::itoa(123, result, sizeof(result));
+TEST(MSStandardLib_itoa, DecimalSigned) {
+	char buffer[5];
+	int result = msstdlib::itoa(-123, buffer, sizeof(buffer));
 
-	EXPECT_EQ(std::string(expected), "123");
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "-123");
 }
 
-TEST(MSStandardLib_itoa, Signed) {
-	char result[5];
-	char* expected = msstdlib::itoa(-123, result, sizeof(result));
+TEST(MSStandardLib_itoa, BinarySigned) {
+	char buffer[9];
+	int result = msstdlib::itoa(-123, buffer, sizeof(buffer), msstdlib::ItoaBase::Binary);
 
-	EXPECT_EQ(std::string(expected), "-123");
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "-1111011");
 }
 
-TEST(MSStandardLib_itoa, InvalidBase) {
-	char result[5];
-	char* expected = msstdlib::itoa(0, result, sizeof(result), 37);
+TEST(MSStandardLib_itoa, BinaryUnsigned) {
+	char buffer[8];
+	int result = msstdlib::itoa(123, buffer, sizeof(buffer), msstdlib::ItoaBase::Binary);
 
-	EXPECT_EQ(expected, nullptr);
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "1111011");
 }
 
-TEST(MSStandardLib_itoa, InvalidSizeBuffer) {
-	char result[1];
-	char* expected = msstdlib::itoa(12123, result, sizeof(result));
+TEST(MSStandardLib_itoa, HexidecimalSigned) {
+	char buffer[4];
+	int result = msstdlib::itoa(-123, buffer, sizeof(buffer), msstdlib::ItoaBase::Hexidecimal);
 
-	EXPECT_EQ(expected, nullptr);
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "-7B");
 }
 
-TEST(MSStandardLib_itoa, InvalidSizeBufferValue) {
-	char result[4];
-	char* expected = msstdlib::itoa(123, result, 1);
+TEST(MSStandardLib_itoa, HexidecimalUnsigned) {
+	char buffer[3];
+	int result = msstdlib::itoa(123, buffer, sizeof(buffer), msstdlib::ItoaBase::Hexidecimal);
 
-	EXPECT_EQ(expected, nullptr);
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "7B");
+}
+
+TEST(MSStandardLib_itoa, OctalSigned) {
+	char buffer[5];
+	int result = msstdlib::itoa(-123, buffer, sizeof(buffer), msstdlib::ItoaBase::Octal);
+
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "-173");
+}
+
+TEST(MSStandardLib_itoa, OctalUnsigned) {
+	char buffer[4];
+	int result = msstdlib::itoa(123, buffer, sizeof(buffer), msstdlib::ItoaBase::Octal);
+
+	EXPECT_EQ(result, msstdlib::ItoaResult::Success);
+	EXPECT_EQ(std::string(buffer), "173");
+}
+
+TEST(MSStandardLib_itoa, InvalidSizeError) {
+	char buffer[1];
+	int result = msstdlib::itoa(123, buffer, sizeof(buffer));
+
+	EXPECT_EQ(result, msstdlib::ItoaResult::InvalidSize);
 }
